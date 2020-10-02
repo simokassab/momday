@@ -1,0 +1,475 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <form action="{{ delete_post_url }}" method="post" id="form_delete_post"><input type="hidden" name="author_id" value="{{ author_id }}"></form>
+                <button onclick="return confirm('Are you sure you want to permanently delete author?');" form="form_delete_post" value="Submit" class="btn btn-danger" data-toggle="tooltip"  title="{{ text_delete}}"><i class="fa fa-trash-o"></i></button>
+
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="view/css/momday/momday_radio.css">
+
+    <link rel="stylesheet" href="view/javascript/cropper/cropper.css">
+    <script src="view/javascript/cropper/cropper.js" ></script>
+
+    {#<script src="view/javascript/cropper/jquery-cropper.js" ></script>#}
+
+    <style>
+
+
+        #dz-previews-container .dz-remove{
+            color: red;
+        }
+        #dz-previews-container .dz-progress{
+            display: block;
+            height: 5px;
+        }
+
+
+        #dz-previews-container .dz-upload {
+            display: block;
+            height: 100%;
+            background: #b7e2b7;
+            width: 0;
+        }
+
+    </style>
+    <style>
+        @keyframes blink {50% { color: transparent }}
+        .loader__dot { animation: 1s blink infinite }
+        .loader__dot:nth-child(2) { animation-delay: 250ms }
+        .loader__dot:nth-child(3) { animation-delay: 500ms }
+    </style>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="img-container" >
+                        <img id="modal-author-image"   style = "max-width:100%;/*max-height:calc(100vh - 200px);*/align:center;">
+                    </div>
+                </div>
+                <div id="dz-previews-container" style="padding:15px; padding-top:0;"></div>
+                <div class="modal-footer">
+                    <button id="dropzone-author-image" type="button" class="btn btn-primary" style= "float: left;" onclick="clearFeaturedPreviewsConatainer()">Browse</button>
+                    <button type="button" class="btn btn-success" style= "float: left;" data-dismiss="modal" onclick="saveCroppedImage()" data-toggle="tooltip" title="{{ text_button_accept_crop }}">Accept</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#modal').on('shown.bs.modal', function (e) {
+            onModalOpen();
+        })
+
+    </script>
+
+    <div class="container-fluid">
+
+
+        <div class="row">
+            <div class="col-sm-12 ">
+                <!--  Form -->
+                <div class="form-grid">
+                    <form action="{{ action }}" method="post"  id="addAuthorForm">
+                        <input type="hidden" id="author_id" name="author_id" value="{{ author_id }}">
+
+                        <label>{{ text_author_image_instructions }}</label>
+
+                        {% set computed_featured_image = blank_image %}
+                        {% if author_image_name %}
+                            {% set computed_featured_image = images_directory ~ author_image_name %}
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-sm-3" style="margin-bottom: 10px">
+                                <img alt="blank" id="author_cropped_image" src="{{ computed_featured_image }}">
+                            </div>
+                        </div>
+
+                        <div id="applying_cropped_image" style="margin-bottom: 10px; display: none">Applying<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></div>
+                        <button form="form1" class="btn btn-primary" style="font-weight: bold;margin-right: 10px;" id="changeAuthorImage" data-target="#modal" data-toggle="modal">Change</button>
+                        <button onclick="removeAuthorImage()" form="form1" class="btn btn-danger" style="font-weight: bold;margin-right: 10px;" id="removeAuthorImage" >Remove</button>
+
+                        <div class="row">
+
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>{{ text_author_full_name }}</label>
+                                    <input placeholder="Enter Author Full Name" class="formInput form-control" type="text" name="authorfullname" value="{{ author_full_name }}"  autocomplete="off" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label>{{ text_author_bio }}</label>
+                                    <textarea maxlength="3000" placeholder="Enter Author Bio. Do Not Exceed 3000 Characters." class="formInput form-control" type="textarea" rows="5" name="authorbio" autocomplete="off" required>{{ author_bio }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="form-group">
+                            <button type = "submit" onclick="savePost()" data-toggle="tooltip" title="{{ text_button_save_message }}" class="btn btn-primary" style="font-weight: bold;margin-right: 20px;"><i class="fa fa-save"></i> {{ text_button_save }}</button>
+                            <a href="{{ cancel_author_url }}" onclick="return confirm('Are you sure?')" data-toggle="tooltip" title="{{ text_button_cancel_message }}" class="btn btn-danger" style="font-weight: bold;"><i class="fa fa-times"></i> {{ text_button_cancel }}</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <link rel="stylesheet" href="view/css/momday/dropzone.css">
+        <script src="view/javascript/momday/dropzone.js" ></script>
+
+        <style>
+            #cropper{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+            #cropped_result{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+            #author_cropped_image{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+            .img-container{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+        </style>
+
+        <script>
+
+
+
+
+            function clearFeaturedPreviewsConatainer(){
+
+                document.getElementById('dz-previews-container').innerHTML="";
+            }
+
+            function onModalOpen(){
+                initializeCropper();
+            }
+
+
+            function b64toBlob(b64Data, contentType, sliceSize) {
+                contentType = contentType || '';
+                sliceSize = sliceSize || 512;
+
+                var byteCharacters = atob(b64Data);
+                var byteArrays = [];
+
+                for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                    var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+                    var byteNumbers = new Array(slice.length);
+                    for (var i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+
+                    var byteArray = new Uint8Array(byteNumbers);
+
+                    byteArrays.push(byteArray);
+                }
+
+                var blob = new Blob(byteArrays, {type: contentType});
+                return blob;
+            }
+
+            var xhr;
+
+            function saveCroppedImage(xhr){
+
+                var cropperimage = $('#modal-author-image');
+                var ImageURL = cropperimage.cropper('getCroppedCanvas').toDataURL('image/jpeg',0.9);
+                // Split the base64 string in data and contentType
+                var block = ImageURL.split(";");
+                // Get the content type
+                var contentType = block[0].split(":")[1];// In this case "image/gif"
+                // get the real base64 content of the file
+                var realData = block[1].split(",")[1];// In this case "iVBORw0KGg...."
+
+                // Convert to blob
+                var blob = b64toBlob(realData, contentType);
+
+                // Create a FormData and append the file
+                var fd = new FormData();
+                console.log(blob);
+                fd.append("file", blob,"blob.jpeg");
+                fd.append("author_id", {{ author_id }});
+                fd.append("post_type", 'cropped');
+
+
+                //abort previous uploads if any
+                if(xhr && xhr.readyState != 4){
+                    xhr.abort();
+                }
+
+                // Submit Form and upload file
+                xhr = $.ajax({
+                    url:"{{ upload_file_url }}",
+                    data: fd,// the formData function is available in almost all new browsers.
+                    type:"POST",
+                    contentType:false,
+                    processData:false,
+                    cache:false,
+                    dataType:"json", // Change this according to your response from the server.
+                    beforeSend: function() {
+                        document.getElementById("applying_cropped_image").style.display = '';
+                    },
+                    error:function(err){
+                        // console.error(err);
+                    },
+                    success:function(data){
+                        console.log(data);
+                        document.getElementById("author_cropped_image").src = data.image_directory + data.filepath + data.filename;
+                    },
+                    complete:function(){
+                        console.log("Request finished.");
+                        document.getElementById("applying_cropped_image").style.display = 'none';
+                    }
+                });
+
+            }
+
+
+
+            function removeAuthorImage(){
+
+                //abort previous uploads if any
+                if(xhr && xhr.readyState != 4){
+                    xhr.abort();
+                }
+                var featured_image_source = document.getElementById("author_cropped_image").src;
+                var filenameToRemove = featured_image_source.substring(featured_image_source.lastIndexOf('/')+1);
+
+                // Create a FormData and append the file details
+                var fd = new FormData();
+                fd.append("author_id", {{ author_id }});
+                fd.append("filenameToRemove", filenameToRemove);
+
+                $.ajax({
+                    url:"{{ remove_author_image_url }}",
+                    data: fd,
+                    type:"POST",
+                    contentType:false,
+                    processData:false,
+                    cache:false,
+                    dataType:"json", // Change this according to your response from the server.
+                    error:function(err){
+                        console.error(err);
+                        console.log("err");
+                    },
+                    success:function(data){
+                        console.log(data);
+                        console.log("success")
+                        document.getElementById("author_cropped_image").src = "{{ blank_image }}";
+                    },
+                    complete:function(){
+                        console.log("Request finished.");
+                    }
+                });
+            }
+
+        </script>
+
+        <script>
+            function initializeCropper() {
+                // var cropperimage = document.getElementById(cropper);
+                // var cropperimage = $('#cropper');
+                var cropperimage = $('#modal-author-image');
+
+                var cropper = cropperimage.cropper('destroy').cropper({
+                    // var cropper = new Cropper(cropperimage, {
+
+                    // options here
+
+
+                    // Define the view mode of the cropper
+                    viewMode: 2, // 0, 1, 2, 3
+
+                    // Define the dragging mode of the cropper
+//                 dragMode: DRAG_MODE_CROP, // 'crop', 'move' or 'none'
+
+                    // Define the aspect ratio of the crop box
+                    aspectRatio: 1,
+
+                    // An object with the previous cropping result data
+                    data: null,
+
+                    // A selector for adding extra containers to preview
+                    preview: '',
+
+                    // Re-render the cropper when resize the window
+                    responsive: true,
+
+                    // Restore the cropped area after resize the window
+                    restore: true,
+
+                    // Check if the current image is a cross-origin image
+                    checkCrossOrigin: true,
+
+                    // Check the current image's Exif Orientation information
+                    checkOrientation: true,
+
+                    // Show the black modal
+                    modal: true,
+
+                    // Show the dashed lines for guiding
+                    guides: true,
+
+                    // Show the center indicator for guiding
+                    center: true,
+
+                    // Show the white modal to highlight the crop box
+                    highlight: true,
+
+                    // Show the grid background
+                    background: true,
+
+                    // Enable to crop the image automatically when initialize
+                    autoCrop: true,
+
+                    // Define the percentage of automatic cropping area when initializes
+                    autoCropArea: 0.8,
+
+                    // Enable to move the image
+                    movable: true,
+
+                    // Enable to rotate the image
+                    rotatable: true,
+
+                    // Enable to scale the image
+                    scalable: true,
+
+                    // Enable to zoom the image
+                    zoomable: true,
+
+                    // Enable to zoom the image by dragging touch
+                    zoomOnTouch: true,
+
+                    // Enable to zoom the image by wheeling mouse
+                    zoomOnWheel: true,
+
+                    // Define zoom ratio when zoom the image by wheeling mouse
+//                 wheel<a href="https://www.jqueryscript.net/zoom/">Zoom</a>Ratio: 0.1,
+
+                    // Enable to move the crop box
+                    cropBoxMovable: true,
+
+                    // Enable to resize the crop box
+                    cropBoxResizable: true,
+
+                    // Toggle drag mode between "crop" and "move" when click twice on the cropper
+                    toggleDragModeOnDblclick: true,
+
+                    // Size limitation
+                    minCanvasWidth: 0,
+                    minCanvasHeight: 0,
+                    minCropBoxWidth: 0,
+                    minCropBoxHeight: 0,
+                    minContainerWidth: 200,
+                    minContainerHeight: 100,
+
+                    // Shortcuts of events
+                    ready: null,
+                    cropstart: null,
+                    cropmove: null,
+                    cropend: null,
+                    crop: null,
+                    zoom: null
+
+
+                });
+
+            }
+
+        </script>
+
+
+
+
+
+        <style>
+            .dropzone .dz-preview .dz-details .dz-filename, .dropzone-previews .dz-preview .dz-details .dz-filename {
+                overflow: hidden;
+                height: 100%;
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .dropzone .dz-preview .dz-details img, .dropzone-previews .dz-preview .dz-details img {
+                cursor: pointer;
+            }
+
+            /*.dropzone .dz-default.dz-message {*/
+            /*background-image: url('../image/dropzone/spritemap.png');*/
+            /*}*/
+        </style>
+
+        <script>
+
+            Dropzone.autoDiscover = false;
+
+            $("#dropzone-author-image").dropzone({
+                addRemoveLinks: false,
+                uploadMultiple: false,
+                createImageThumbnails: false,
+                previewsContainer : '#dz-previews-container',
+                previewTemplate: '<div class="uploaded-image"><span data-dz-name></span> <strong class="dz-size" data-dz-size></strong><div class="dz-error-message" data-dz-errormessage></div><div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div></div>',
+                acceptedFiles: '.jpeg,.jpg,.png,.gif',
+                dictMaxFilesExceeded: "Maximum upload limit reached",
+                maxFilesize: 2,
+                maxfilesexceeded: "Maximum file sie is 2MB",
+                url: "{{ upload_file_url }}",
+                params: {
+                    author_id: "{{ author_id }}"
+                },
+                dictInvalidFileType: "upload only JPG/PNG/GIF",
+
+                init: function() {
+
+                    this.on("success", function (file,serverFileName) {
+                        console.log(serverFileName);
+                        document.getElementById('modal-author-image').src="{{ temp_image_upload_directory }}" + serverFileName.filename;
+                        initializeCropper();
+                    });
+                    this.on("error", function(file, message) {
+                        this.removeFile(file);
+                        alert(message);
+                    });
+                }
+            });
+
+            function assignPostImageValue(){
+                document.getElementById('post_images_id').value = post_images_array;
+            }
+            function savePost(){
+                assignPostImageValue();
+                document.getElementById('momday_blog_editor_innertext').value =CKEDITOR.instances.momday_blog_editor.getData();
+            }
+
+        </script>
+        </body>
+
+
+    </div>
+
+</div>
+{{ footer }}

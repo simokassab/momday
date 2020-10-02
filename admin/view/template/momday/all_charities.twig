@@ -1,0 +1,145 @@
+{{ header }}
+
+<link rel="stylesheet" href="view/javascript/DataTables/datatables.css">
+<script src="view/javascript/DataTables/datatables.js" ></script>
+<link href="view/javascript/font-awesome/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
+<style>
+    .add-text{
+        font-weight: bold;
+    }
+</style>
+
+
+{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <a href="{{ href['href_add'] }}" data-toggle="tooltip" title="{{ text_button_add }}" class="btn btn-primary add-text"><i class="fa fa-plus"></i> {{ button_add }}</a>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+
+        <table id="example" class="display" style="width:100%">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+        </table>
+
+    </div>
+</div>
+{{ footer }}
+
+
+
+<script>
+    $(document).ready(function() {
+        var location_index = 1;
+        var website_index = 2;
+        var email_index = 3;
+        var phone_index = 4;
+        var id_col_index = 5;
+        var table = $('#example').DataTable( {
+            {#"ajax": "{{ return_all_url }}",#}
+            "ajax": {
+                "url": "{{ return_all_url }}",
+                "type": 'POST',
+                "data": {
+                    "language_id": 1
+                }
+            },
+            "scrollX": true,
+            "columns": [
+                { "data": "name" },
+                { "data": "location" },
+                { "data": "phone" },
+                { "data": "email" },
+                { "data": "website" },
+                { "data": "charity_id" }
+            ],
+            // "order": [[ 3, "desc" ]],
+
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+
+            // select: 'multi',
+
+            columnDefs: [
+                {
+                    targets: location_index,
+                    render: function (data) {
+                        return addDots(data);
+                    }
+                },
+                {
+                    targets: website_index,
+                    render: function (data) {
+                        return addDots(data);
+                    }
+                },
+                {
+                    targets: email_index,
+                    render: function (data) {
+                        return addDots(data);
+                    }
+                },
+                {
+                    targets: phone_index,
+                    render: function (data) {
+                        return addDots(data);
+                    }
+                },
+                {
+                    targets: id_col_index,
+                    render: function (data, type, row) {
+                        var buttons =' <form action="{{ href['href_delete'] }}" method="post" id="form_delete_' + data + '"><input type="hidden" name="charity_id" value="' + data + '"></form>' +
+                            ' <a href="{{ href['href_edit']}}' + '&charity_id=' + data +  '" class="btn btn-info button" data-toggle="tooltip"  title="{{ text_edit }}"><i class="fa fa-pencil"></i></a>' +
+                            ' <button onclick="return confirm(\'Are you sure you want to permanently delete charity?\');" form="form_delete_' + data + '" value="Submit" class="btn btn-info button" data-toggle="tooltip"  title="{{ text_delete}}"><i class="fa fa-trash-o"></i></button>';
+
+                        return buttons;
+
+                    }
+                }
+            ]
+        } );
+
+
+    } );
+
+    function addDots(data){
+        var dots = '';
+        if(data) {
+            var length = data.length;
+            if (length > 30) {
+                dots = '...';
+            }
+            return data.substring(0,30) + dots;
+        }else{
+            return null;
+        }
+    }
+
+</script>

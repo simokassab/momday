@@ -1,0 +1,98 @@
+{{ header }}
+<div id="container" class="container j-container">
+    <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="{{ breadcrumb.href }}" itemprop="url"><span itemprop="title">{{ breadcrumb.text }}</span></a></li>
+        {% endfor %}
+    </ul>
+    {{ column_left }}{{ column_right }}
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true" >
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="height: 600px;max-height: 100%;overflow-y:auto;">
+                <div class="modal-body"  style = "max-height:fit-content;margin-bottom:50px;overflow:hidden;">
+                    <div class="img-container">
+                        <img id="modal-featured-image"   style = "border-radius: 50%;max-width:50%;display: block;margin-left: auto;margin-right: auto;" src="{{ blank_image }}">
+                    </div>
+                    <div>
+                        <h2 id="modal-author-name" class="modal-title text-center" align="center" style="color: rgb(176, 158, 102)">Momsay</h2>
+                    </div>
+                    <br>
+                    <br>
+                    <div style="margin-left:20px;margin-right:20px;">
+                        <h3 id="modal-author-bio-title"><img src="{{ small_lines_image }}" style="height:10px;"/> BIOGRAPHY</h3>
+                        <hr style="background-color: rgb(176, 158, 102);height: 2px;margin-bottom:10px;"/>
+                        <p id="modal-author-bio">Author's Bio</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="content">
+        <h1 class="heading-title">{{ heading_title }}
+            {% if journal2.settings.get('blog_blog_feed_url') %}
+                <a class="journal-blog-feed" href="{{ journal2.settings.get('blog_blog_feed_url') }}" target="_blank"><span class="feed-text">{{ journal2.settings.get('feed_text') }}</span></a>
+            {% endif %}
+        </h1>
+        {{ content_top }}
+        {% if category_description %}
+            <div>{{ category_description }}</div>
+        {% endif %}
+        {% if posts|length > 0 %}
+
+            <div class="posts main-posts blog-{{ journal2.settings.get('config_blog_settings.posts_display', 'grid"') }}-view">
+                {% for post in posts %}
+                    <div class="post-item {{ grid_classes }}">
+                        <div class="post-wrapper">
+                            {% if post.image %}
+                                <a class="post-image" href="{{ post.href }}"><img src="{{ post.image }}" alt="{{ post.name }}"/></a>
+                            {% endif %}
+                            <div class="post-item-details">
+                                <h2><a href="{{ post.href }}">{{ post.name }}</a></h2>
+                                <div class="comment-date">
+                                    {% if post_to_author_id[post.post_id] %}
+                                        <a data-toggle="modal" data-target="#modal" class="p-author" onclick="updateModal({{ post_to_author_id[post.post_id]['author_id'] }})">{{ post_to_author_id[post.post_id]['full_name'] }}</a>
+                                    {% endif %}
+                                    <span class="p-date">{{ post.date }}</span>
+                                    <span class="p-comment">{{ post.comments }}</span>
+                                </div>
+                                <div class="post-text"><span>{{ post.description }}</span></div>
+                                <div class="post-button">
+                                    <a class="post-view-more button" href="{{ post.href }}"><i class="post-button-left-icon"></i>{{ journal2.settings.get('blog_button_read_more', 'Read More') }}<i class="post-button-right-icon"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {{ pagination }}
+        {% else %}
+            <div class="buttons">
+                <div class="right"><a href="{{ continue }}" class="button">{{ button_continue }}</a></div>
+            </div>
+        {% endif %}
+        {{ content_bottom }}
+    </div>
+    <script>
+        if (!Journal.isFlexboxSupported) {
+            Journal.equalHeight($(".posts .post-wrapper"), '.post-item-details h2 a');
+            Journal.equalHeight($(".posts .post-wrapper"), '.post-text span');
+        }
+
+        function updateModal(author_id){
+            var authors_info = JSON.parse('{{ author_id_to_info }}');
+            document.getElementById('modal-featured-image').src=authors_info[author_id]['image_name'];
+            document.getElementById('modal-author-name').innerText=authors_info[author_id]['full_name'].toUpperCase();
+            document.getElementById('modal-author-bio').innerHTML=authors_info[author_id]['bio'];
+        }
+    </script>
+    <style>
+         .p-author{
+            color: rgb(176, 158, 102);
+        }
+    </style>
+</div>
+{{ footer }}

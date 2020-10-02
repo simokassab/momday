@@ -1,0 +1,55 @@
+.button-celebrity-store-grid{
+    height: 38px;
+    width: 123px;
+    font-family: Helvetica, Arial, sans-serif;
+    margin-left: 1px;
+    position: relative;
+    text-align: center;
+    /*font-size: 14px;*/
+    top: -18px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+.button-celebrity-store-grid-text{
+    position: relative;
+    top: 4px;
+}
+.button-celebrity-store-list{
+    font-family: Helvetica, Arial, sans-serif;
+    position: relative;
+    text-align: center;
+    margin-right: 6px;
+    height: 31px;
+    width: 123px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.button-celebrity-pressed{
+    background-color: rgb(176, 158, 102);
+}
+
+.grid-button-cart-text-celebrity {
+    display: none;
+    position: relative;
+    text-align: center;
+    top: -9px;
+}
+.grid-button-cart-celebrity {
+    line-height: 38px;
+    height : 38px;
+}
+.deactivateLink {
+    pointer-events: none;
+    cursor: default;
+}
+
+.button-celebrity-store-product-text
+{
+    font-weight: bold;
+    font-family: Helvetica, Arial, sans-serif;
+    font-style: normal;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: rgb(255, 255, 255);
+}

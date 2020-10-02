@@ -1,0 +1,150 @@
+2020-07-04 16:53:59 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [service_command] => Purchase
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [language] => en
+    [signature] => 895c5e5b98cf388aab8a619f167a22962668a277b8fa3a4afd79d34e69aefd63
+)
+
+2020-07-04 16:53:59 - Invalid Signature. Calculated Signature: 895c5e5b98cf388aab8a619f167a22962668a277b8fa3a4afd79d34e69aefd63, Response Signature: 66bc04e4b5894093c3dd4500da60883aa982f94a948705bdc47d15254e6c959d
+2020-07-04 17:49:17 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [service_command] => Purchase
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [language] => en
+    [signature] => 895c5e5b98cf388aab8a619f167a22962668a277b8fa3a4afd79d34e69aefd63
+)
+
+2020-07-04 17:49:17 - Invalid Signature. Calculated Signature: 895c5e5b98cf388aab8a619f167a22962668a277b8fa3a4afd79d34e69aefd63, Response Signature: 66bc04e4b5894093c3dd4500da60883aa982f94a948705bdc47d15254e6c959d
+2020-07-04 17:59:23 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [response_code] => 00010
+    [service_command] => AUTHORIZATION
+    [response_message] => Invalid access code
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [token_name] => Op9Vmp
+    [return_url] => http://momday.net/index.php?route=extension/payment/payfort_fort/response
+    [language] => en
+    [status] => 00
+)
+
+2020-07-04 17:59:23 - Invalid Signature. Calculated Signature:  , Response Signature: d804f960ebe36b29165b8ba3267810f83bfdb1354881a863bd04b91159a7f5e5
+2020-07-04 18:00:12 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [response_code] => 00010
+    [response_message] => Invalid access code
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [return_url] => http://momday.net/index.php?route=extension/payment/payfort_fort/response
+    [language] => en
+    [command] => AUTHORIZATION
+    [status] => 00
+)
+
+2020-07-04 18:00:12 - Invalid Signature. Calculated Signature:  , Response Signature: 7397835c85cbba75e3ddb6358ef036db13d11ee220152e41de924f3282fe933b
+2020-07-04 18:14:38 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [response_code] => 00010
+    [service_command] => TOKENIZATION
+    [card_number] => 400555******0001
+    [response_message] => Invalid access code
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [token_name] => Op9Vmp
+    [return_url] => http://momday.net/index.php?route=extension/payment/payfort_fort/response
+    [language] => en
+    [status] => 00
+)
+
+2020-07-04 18:14:38 - Invalid Signature. Calculated Signature:  , Response Signature: 457dfcb45e12b47e064beedbfb83253b8e2ad1bdf8898e2896feec45c66fb19d
+2020-07-04 18:15:31 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [response_code] => 00010
+    [service_command] => TOKENIZATION
+    [card_number] => 400555******0001
+    [response_message] => Invalid access code
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [token_name] => Op9Vmp
+    [return_url] => http://momday.net/index.php?route=extension/payment/payfort_fort/response
+    [language] => en
+    [status] => 00
+)
+
+2020-07-04 18:15:31 - Invalid Signature. Calculated Signature:  , Response Signature: 457dfcb45e12b47e064beedbfb83253b8e2ad1bdf8898e2896feec45c66fb19d
+2020-07-04 18:16:41 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [response_code] => 00010
+    [service_command] => PURCHASE
+    [response_message] => Invalid access code
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [token_name] => Op9Vmp
+    [return_url] => http://momday.net/index.php?route=extension/payment/payfort_fort/response
+    [language] => en
+    [status] => 00
+)
+
+2020-07-04 18:16:41 - Invalid Signature. Calculated Signature:  , Response Signature: 44ff8686caeb1739b7d981ce28e4b7b0a53ccd7b564df2a5911e5aa93a76c7f3
+2020-07-04 18:25:09 - Fort response parameters (offline) for payment method () 
+
+Array
+(
+    [route] => extension/payment/payfort_fort/response
+    [response_code] => 00010
+    [service_command] => PURCHASE
+    [response_message] => Invalid access code
+    [merchant_identifier] => cbfd3f63
+    [merchant_reference] => XYZ9239-yu898
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [token_name] => Op9Vmp
+    [return_url] => http://momday.net/index.php?route=extension/payment/payfort_fort/response
+    [language] => en
+    [status] => 00
+)
+
+2020-07-04 18:25:09 - Invalid Signature. Calculated Signature:  , Response Signature: 44ff8686caeb1739b7d981ce28e4b7b0a53ccd7b564df2a5911e5aa93a76c7f3
+2020-09-22 15:37:47 - Payfort Request Params for payment method (payfort_fort) 
+
+Array
+(
+    [merchant_identifier] => cbfd3f63
+    [access_code] => pPtc4lykkRxpahhWK34L
+    [merchant_reference] => 17
+    [language] => en
+    [service_command] => TOKENIZATION
+    [return_url] => https://momday.net/index.php?route=payment/payfort_fort/merchantPageResponse
+    [signature] => e6694646f07f111bab69728f6f63a6abcf23a6fca4064d8d24a7a032214a53e2
+)
+

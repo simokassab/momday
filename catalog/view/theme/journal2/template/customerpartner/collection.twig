@@ -1,0 +1,154 @@
+<style>
+	.xl-20{
+		width: 25%;
+	}
+</style>
+<div id="seller-collection">
+	{% if products %}
+		<div class="row collection-top">
+			<div class="product-filter">
+				<div class="display">
+					<a onclick="Journal.gridView()" class="grid-view default-work">{{ journal2.settings.get('category_grid_view_icon', button_grid) }}</a>
+					<a onclick="Journal.listView()" class="list-view default-work">{{ journal2.settings.get('category_list_view_icon', button_list) }}</a>
+				</div>
+
+				<div class="limit"><b>{{ text_limit}}</b>
+					<select id="input-limit" class="form-control">
+							{% for limits in limits  %}
+								{% if limits['value'] == limit %}
+								<option value="{{ limits['href']}}" selected="selected">{{ limits['text']}}</option>
+								{% else %}
+								<option value="{{ limits['href']}}">{{ limits['text']}}</option>
+								{% endif %}
+							{% endfor %}
+					</select>
+				</div>
+
+				<div class="sort"><b>{{ text_sort}}</b>
+					<select id="input-sort" class="form-control">
+							{% for sorts in sorts %}
+							{% if sorts['value'] == sort ~ '-' ~ order %}
+							<option value="{{ sorts['href']}}" selected="selected">{{ sorts['text']}}</option>
+							{% else %}
+							<option value="{{ sorts['href']}}">{{ sorts['text']}}</option>
+							{% endif %}
+							{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+	<div class="row" style="display:inline-flex;">
+		<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+			<!-- for category list-->
+			{% if categories %}
+				<column id="column-left">
+					<ul class="mp-list-group" id="category-menu" style="border:none;box-shadow:unset;">
+
+						<li class="mp-list-group-item mp-list-group-collection active">
+						  <a data-collection-url="{{ collection_url }}" class="default-work">{{  'All' }}</a>
+						  <i class="fa fa-caret-down" style="font-size:20px;float:right;"></i>
+						</li>
+						{% for category in categories %}
+							{% if category['category_id'] == category_id %}
+								<li class="mp-list-group-item mp-list-group-collection active">
+									<a data-collection-url="{{ category['href'] }}" class="default-work">{{ category['name'] }}</a>
+									<i class="fa fa-caret-down" style="font-size:20px;float:right;"></i>
+								</li>
+								{% if category['children'] %}
+									{% for child in category['children'] %}
+										{% if child['category_id'] == child_id %}
+											<li class="mp-list-group-item mp-list-group-collection active hide-child">
+												<a data-collection-url="{{ child['href'] }}" class="default-work">&nbsp;&nbsp;&nbsp;- {{ child['name'] }}</a>
+											</li>
+										{% else %}
+											<li class="mp-list-group-item mp-list-group-collection active hide-child">
+												<a data-collection-url="{{ child['href'] }}" class="default-work">&nbsp;&nbsp;&nbsp;- {{ child['name'] }}</a>
+											</li>
+										{% endif %}
+									{% endfor %}
+								{% endif %}
+							{% else %}
+							<li class="mp-list-group-item mp-list-group-collection active">
+								<a data-collection-url="{{ category['href'] }}" class="default-work">{{ category['name'] }}</a>
+								<i class="fa fa-caret-down" style="font-size:20px;float:right;"></i>
+							</li>
+							{% endif %}
+						{% endfor %}
+					</ul>
+				</column>
+			{% endif %}
+		</div>
+
+		<div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
+			{% if products %}
+				<div id="mp-products">
+					<div id="seller-collection">
+						<div class="row main-products product-grid" data-grid-classes="xs-50 sm-33 md-33 lg-25 xl-20 inline-button">
+							{% for product in products %}
+				        <div class="product-grid-item xs-100 sm-50 md-33 lg-25 xl-25 display-both block-button">
+				          <div id="{{product['product_id']}}" class="seller-thumb product-thumb product-wrapper {{product['labels'] is defined and product['labels'] is iterable and product['labels']['outofstock'] is defined ? 'outofstock' : ''}}">
+				            <div class="image">
+				              <a href="{{ product['href'] }}" class="default-work" {% if product['thumb2'] %} class="has-second-image" style="background: url('{{ product['thumb2'] }}') no-repeat;" {% endif %}>
+													<img class="lazy first-image" width="{{journal2.settings.get('config_image_width')}}" height="{{journal2.settings.get('config_image_height')}}" src="{{product.thumb}}" data-src="{{product.thumb}}" title="{{product.name}}" alt="{{product.name}}"/>
+				              </a>
+				              {% if journal2.settings.get('product_grid_wishlist_icon_position') == 'image' and journal2.settings.get('product_grid_wishlist_icon_display') == 'icon' %}
+				                  <div class="wishlist" style="margin-left:10%;"><a onclick="addToWishList('{{ product['product_id'] }}');" class="default-work hint--top" data-hint="{{ button_wishlist }}"><i class="wishlist-icon"></i><span class="button-wishlist-text">{{ button_wishlist }}</span></a></div>
+				                  <div class="compare"><a onclick="addToCompare('{{ product['product_id'] }}');" class="default-work hint--top" data-hint="{{ button_compare }}"><i class="compare-icon"></i><span class="button-compare-text">{{ button_compare }}</span></a></div>
+				              {% endif %}
+				            </div>
+				            <div class="product-details">
+				              <div class="caption">
+				                <h4 class="name"><a href="{{ product['href'] }}" class="default-work">{{ product['name'] }}</a></h4>
+
+				                {% if product['price'] %}
+				                <p class="price">
+				                  {% if not product['special'] %}
+				                  {{ product['price'] }}
+				                  {% else %}
+				                  <span style="color:red;"><strike>{{ product['price'] }}</strike></span>
+													<span>{{ product['special'] }}</span>
+				                  {% endif %}
+													{% if product['tax'] %}
+
+				                  <span class="price-tax">{{ text_tax }} {{ product['tax'] }}</span>
+				                  {% endif %}
+				                </p>
+				                {% endif %}
+				              </div>
+											<div class="button-group">
+				                {% if staticCall('Journal2Utils', 'isEnquiryProduct', [this, product['product_id']]) %}
+				                <div class="cart enquiry-button">
+				                  <a href="javascript:Journal.openPopup('{{ journal2.settings.get('enquiry_popup_code') }}', '{{ product.product_id }}');" data-clk="addToCart('{{ product.product_id }}');" class="button hint--top btn_cart" data-hint="{{ journal2.settings.get('enquiry_button_text') }}">{{ journal2.settings.get('enquiry_button_icon') }}<span class="button-cart-text">{{ journal2.settings.get('enquiry_button_text') }}</span></a>
+				                </div>
+				                {% else %}
+				                <div class="cart {{ product['labels'] is defined and product['labels'] is iterable and product['labels']['outofstock'] is defined ? 'outofstock' : ''}}">
+				                  <a onclick="addToCart('{{ product['product_id']}}');" class="button hint--top btn_cart" data-hint="{{ button_cart}}"><i class="button-left-icon"></i><span class="button-cart-text">{{ button_cart}}</span><i class="button-right-icon"></i></a>
+				                </div>
+				                {% endif %}
+				                <div class="wishlist"><a onclick="addToWishList('{{ product['product_id']}}');" class="hint--top" data-hint="{{ button_wishlist}}"><i class="wishlist-icon"></i><span class="button-wishlist-text">{{ button_wishlist}}</span></a></div>
+				                <div class="compare"><a onclick="addToCompare('{{ product['product_id']}}');" class="hint--top" data-hint="{{ button_compare}}"><i class="compare-icon"></i><span class="button-compare-text">{{ button_compare}}</span></a></div>
+				              </div>
+				            </div>
+				          </div>
+				        </div>
+							{% endfor %}
+						</div>
+
+						<div class="row pagination" id="seller-collection">
+							<div class="col-sm-6 text-left links">{{ pagination}}</div>
+							<div class="col-sm-6 text-right results" style="text-align:right;">{{ results}}</div>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+		</div>
+		{% if not categories and not products %}
+			<p>{{ text_empty}}</p>
+		{% endif %}
+	</div>
+</div>
+<script type="text/javascript">
+	Journal.enableQuickView();
+    $('.quickview-button a').addClass('default-work');
+</script>

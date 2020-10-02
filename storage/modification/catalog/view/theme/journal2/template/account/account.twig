@@ -1,0 +1,207 @@
+{{ header }}
+
+                    <style type="text/css">
+                      .btn-success{
+                        background-image: linear-gradient(to bottom, #62c462, #51a351);
+                      }
+                    </style>
+                
+<div id="container" class="container j-container">
+  <ul class="breadcrumb">
+    {% for breadcrumb in breadcrumbs %}
+      <li itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="{{ breadcrumb.href }}" itemprop="url"><span itemprop="title">{{ breadcrumb.text }}</span></a></li>
+    {% endfor %}
+  </ul>
+  {% if success %}
+    <div class="alert alert-success success"><i class="fa fa-check-circle"></i> {{ success }}</div>
+  {% endif %}
+
+                    {% if is_seller is defined and is_seller %}
+                    <style>
+                    @media only screen and (min-width: 600px) {
+                    .form-horizontal{float:  right;margin-left: -130px;
+margin-right: 20px; }
+}
+                    </style>
+                        <form class="form-horizontal"  action="{{ action }}" method="post" id="form-mode">
+                            <div>
+                              {% if marketplace_seller_mode is defined and marketplace_seller_mode %}
+                               <input value="1" name="marketplace_seller_mode" data-toggle="toggle" data-on="{{ text_mode_seller }}" data-off="{{ text_mode_customer }}" data-onstyle="success" data-offstyle="danger" type="checkbox" class="form-control" checked>
+                              {% else %}
+                               <input value="1" name="marketplace_seller_mode" data-toggle="toggle" data-on="{{ text_mode_seller }}" data-off="{{ text_mode_customer }}" data-onstyle="success" data-offstyle="danger" type="checkbox" class="form-control">
+                              {% endif %}
+                            </div>
+                        </form>
+                        <br/>
+                    {% endif %}
+                
+  <div class="row">{{ column_left }}{{ column_right }}
+    {% if column_left and column_right %}
+      {% set class = 'col-sm-6' %}
+    {% elseif column_left or column_right %}
+      {% set class = 'col-sm-9' %}
+    {% else %}
+      {% set class = 'col-sm-12' %}
+    {% endif %}
+    <div id="content" class="{{ class }}">{{ content_top }}
+      <h2 class="secondary-title">{{ text_my_account }}</h2>
+      <div class="content my-account">
+        <ul class="list-unstyled">
+          <li><a href="{{ edit }}">{{ text_edit }}</a></li>
+          <li><a href="{{ password }}">{{ text_password }}</a></li>
+          <li><a href="{{ address }}">{{ text_address }}</a></li>
+          <li><a href="{{ wishlist }}">{{ text_wishlist }}</a></li>
+        </ul>
+      </div>
+      {% if credit_cards %}
+        <h2>{{ text_credit_card }}</h2>
+        <ul class="list-unstyled">
+          {% for credit_card in credit_cards %}
+            <li><a href="{{ credit_card.href }}">{{ credit_card.name }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <h2 class="secondary-title">{{ text_my_orders }}</h2>
+      <div class="content my-orders">
+        <ul class="list-unstyled">
+          <li><a href="{{ order }}">{{ text_order }}</a></li>
+          <li><a href="{{ download }}">{{ text_download }}</a></li>
+          {% if reward %}
+            <li><a href="{{ reward }}">{{ text_reward }}</a></li>
+          {% endif %}
+          <li><a href="{{ return }}">{{ text_return }}</a></li>
+          <li><a href="{{ transaction }}">{{ text_transaction }}</a></li>
+          <li><a href="{{ recurring }}">{{ text_recurring }}</a></li>
+        </ul>
+      </div>
+
+      <h2 class="secondary-title">{{ text_my_affiliate }}</h2>
+      <ul class="list-unstyled">
+        {% if not tracking %}
+          <li><a href="{{ affiliate }}">{{ text_affiliate_add }}</a></li>
+        {% else %}
+          <li><a href="{{ affiliate }}">{{ text_affiliate_edit }}</a></li>
+          <li><a href="{{ tracking }}">{{ text_tracking }}</a></li>
+        {% endif %}
+      </ul>
+      <h2 class="secondary-title">{{ text_my_newsletter }}</h2>
+      <ul class="list-unstyled">
+        <li><a href="{{ newsletter }}">{{ text_newsletter }}</a></li>
+      </ul>
+
+                          <!-- Marketplace codes start -->
+                          {% if module_marketplace_status is defined and module_marketplace_status %}
+                           {% if chkIsPartner %}
+                             {% if marketplace_seller_mode is defined and marketplace_seller_mode %}
+                             <h2 class="secondary-title">{{ text_marketplace }}</h2>
+                                 <div class="content my-newsletter">
+                                   <ul class="list-unstyled">
+                                   {% if marketplace_account_menu_sequence is defined %}
+                                     {% for key, menu_option in marketplace_account_menu_sequence %}
+                                       {% if marketplace_allowed_account_menu is defined and marketplace_allowed_account_menu and  key in  marketplace_allowed_account_menu|keys %}
+                                         {% if key == 'asktoadmin' %}
+                                         <li><a id="ask-to-admin" class="list-group-item"  data-toggle="modal" data-target="#myModal-seller-mail">{{ menu_option }}</a></li>
+                                         {% else %}
+                                         <li><a href="{{ account_menu_href[key] }}">{{ menu_option }}</a></li>
+                                         {% endif %}
+                                       {% endif %}
+                                     {% endfor %}
+                                   {% endif %}
+                                   </ul>
+                                 </div>
+                             {% endif %}
+                           {% else %}
+                           <h2 class="secondary-title">{{ text_marketplace }}</h2>
+                           <div class="content my-newsletter">
+                             <ul class="list-unstyled">
+                               <li><a href="{{ want_partner }}">{{ text_becomePartner }}</a></li>
+                             </ul>
+                           </div>
+                           {% endif %}
+                           {% endif %}
+                           <!-- Marketplace codes start -->
+                              
+      {{ content_bottom }}</div>
+  </div>
+</div>
+
+                             <!-- Marketplace codes start -->
+                              <div class="modal fade" id="myModal-seller-mail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ text_close }}</span></button>
+                                      <h1 class="heading-title">{{ text_ask_question }}</h1>
+                                    </div>
+                                    <form id="seller-mail-form">
+                                      <div class="modal-body">
+                                        <div class="form-group required" style="width:97%;">
+                                          <label class="control-label" for="input-subject">{{ text_subject }}</label>
+                                          <input type="text" name="subject" id="input-subject" class="form-control" style="width:100%;" />
+                                          {% if partner is defined %}
+                                            <input type="hidden" name="seller" value="{{ seller_id }}"/>
+                                          {% endif %}
+                                      </div>
+                                    <div class="form-group required" style="width:97%;">
+                                          <label class="control-label" for="input-message">{{ text_ask }}</label>
+                                      <textarea class="form-control" name="message" rows="3" id="input-message" style="width:100%;"></textarea>
+                                      </div>
+                                      <div class="error"></div>
+                                      </div>
+                                  </form>
+                                    <div class="modal-footer">
+                                      <button type="button" class="btn btn-default button" data-dismiss="modal">{{ text_close }}</button>
+                                      <button type="button" class="btn btn-primary button" id="send-mail">{{ text_send }}</button>
+                                    </div>
+                                  </div><!-- /.modal-content -->
+                                </div><!-- /.modal-dialog -->
+                              </div><!-- /.modal -->
+                                                            <script>
+                                $('#send-mail').on('click',function(){
+                                  f = 0;
+                                  $('.alert').remove();
+                                  $('#myModal-seller-mail input[type=\'text\'],#myModal-seller-mail textarea').each(function () {
+                                    if ($(this).val() == '') {
+                                      $(this).parent().addClass('has-error');
+                                      f++;
+                                    }else{
+                                      $(this).parent().removeClass('has-error');
+                                    }
+                                  });
+
+                                  if (f > 0) {
+                                    $('#myModal-seller-mail .error').text('{{ text_error_mail }}').slideDown('slow').delay(2000).slideUp('slow');
+                                  } else {
+                                    $('#send-mail').addClass('disabled');
+                                    $('#myModal-seller-mail').addClass('mail-procss');
+                                    $('#myModal-seller-mail .modal-body').prepend('<div class="alert alert-success success" style="width:auto;"><i class="fa fa-check-circle"></i> {{ text_success_mail }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+
+                                    $.ajax({
+                                      url: '{{ send_mail }}',
+                                      data: $('#seller-mail-form').serialize()+'{{ mail_for }}',
+                                      type: 'post',
+                                      dataType: 'json',
+                                      complete: function () {
+                                        $('#send-mail').removeClass('disabled');
+                                        $('#myModal-seller-mail input,#myModal-seller-mail textarea').each(function () {
+                                        if(this.type != 'hidden'){
+                                          $(this).val('');
+                                          $(this).text('');
+                                        }
+                                        });
+                                      }
+                                    });
+                                  }
+                                });
+                              </script>
+
+                              <!-- Marketplace codes start -->
+                              
+
+                    <script type="text/javascript">
+                      $('input[name=\'marketplace_seller_mode\']').on('change',function() {
+                        $("#form-mode").submit();
+                      });
+                    </script>
+                
+{{ footer }}

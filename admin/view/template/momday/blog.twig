@@ -1,0 +1,917 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <form action="{{ delete_post_url }}" method="post" id="form_delete_post"><input type="hidden" name="post_id" value="{{ post_id }}"></form>
+                <button onclick="return confirm('Are you sure you want to permanently delete post?');" form="form_delete_post" value="Submit" class="btn btn-danger" data-toggle="tooltip"  title="{{ text_delete}}"><i class="fa fa-trash-o"></i></button>
+
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="view/css/momday/momday_radio.css">
+    {#<link rel="stylesheet" href="view/css/momday/momday_modal.css">#}
+
+
+
+    <link rel="stylesheet" href="view/javascript/cropper/cropper.css">
+    <script src="view/javascript/cropper/cropper.js" ></script>
+
+    {#<script src="view/javascript/cropper/jquery-cropper.js" ></script>#}
+
+    <style>
+
+
+         #dz-previews-container .dz-remove{
+             color: red;
+         }
+         #dz-previews-container .dz-progress{
+            display: block;
+            height: 5px;
+        }
+
+
+         #dz-previews-container .dz-upload {
+             display: block;
+             height: 100%;
+             background: #b7e2b7;
+             width: 0;
+         }
+
+    </style>
+    <style>
+        @keyframes blink {50% { color: transparent }}
+        .loader__dot { animation: 1s blink infinite }
+        .loader__dot:nth-child(2) { animation-delay: 250ms }
+        .loader__dot:nth-child(3) { animation-delay: 500ms }
+    </style>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                {#<div class="modal-header">#}
+                    {#<button type="button" class="close" data-dismiss="modal" aria-label="Close">#}
+                        {#<span aria-hidden="true">&times;</span>#}
+                    {#</button>#}
+                {#</div>#}
+                {#<div class="modal-header">#}
+                    {#<button id="dropzone-featured-image" type="button" class="btn btn-primary"   onclick="clearFeaturedPreviewsConatainer()">Browse</button>#}
+                    {#<button type="button" class="btn btn-success" >Accept</button>#}
+                    {#<button type="button" class="btn btn-danger" data-dismiss="modal" style="float: right;">Close</button>#}
+                {#</div>#}
+                <div class="modal-body">
+                    <div class="img-container" >
+                        <img id="modal-featured-image"   style = "max-width:100%;/*max-height:calc(100vh - 200px);*/align:center;">
+                    </div>
+                </div>
+                <div id="dz-previews-container" style="padding:15px; padding-top:0;"></div>
+                <div class="modal-footer">
+                    <button id="dropzone-featured-image" type="button" class="btn btn-primary" style= "float: left;" onclick="clearFeaturedPreviewsConatainer()">Browse</button>
+                    <button type="button" class="btn btn-success" style= "float: left;" data-dismiss="modal" onclick="saveCroppedImage()" data-toggle="tooltip" title="{{ text_button_accept_crop }}">Accept</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#modal').on('shown.bs.modal', function (e) {
+            onModalOpen();
+        })
+
+    </script>
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-sm-12 ">
+                <!--  Form -->
+                <div class="form-grid">
+                    <form action="{{ action }}" method="post"  name="blogDetailsForm"  id="blogDetailsForm">
+                        <input type="hidden" id="post_id" name="post_id" value="{{ post_id }}">
+
+                        <label>{{ text_select_author }}</label>
+                        <div class="row">
+                            <div class="form-group col-sm-3">
+                                <select id='author_select' class='form-control' name='author'>
+                                    {% for name_id in author_names_id %}
+                                        <option value = '{{ name_id['author_id'] }}' {% if name_id['author_id']== selected_author_id %} selected = '{{ selected_author_id }}'{% endif %}>{{ name_id['full_name'] }}</option>
+                                    {% endfor %}
+                                </select>
+
+                            </div>
+                        </div>
+
+                        <label>{{ text_dropzone_featured_instructions }}</label>
+                        <input type="hidden" {% if post_content_image %} value="{{ post_content_image['image_name'] }}" {% endif %} id="featured_image_id" name="featured_image">
+
+                        {% set computed_featured_image = blank_image %}
+                        {% if post_content_image %}
+                            {% set computed_featured_image = featured_image_directory ~ post_content_image %}
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-sm-3" style="margin-bottom: 10px">
+                                <img alt="blank" id="cropped_featured" src="{{ computed_featured_image }}">
+                            </div>
+                            {#<div class="col-sm-3">#}
+                                {#<div id="cropped_result"></div>#}
+                            {#</div>#}
+
+                        </div>
+
+                                {#<!-- The Modal -->#}
+                                {#<div id="featuredImageModal" class="modal">#}
+
+                                    {#<div class="row">#}
+                                        {#<div class="col-sm-9">#}
+                                    {#<!-- Modal content -->#}
+                                            {#<div class="modal-content">#}
+                                                {#<span class="close close-momday-modal">&times;</span>#}
+                                                {#<img alt="Image to crop" id="cropper" src="{{ featured_image_url }}">#}
+                                            {#</div>#}
+{##}
+                                        {#</div>#}
+                                    {#</div>#}
+                                {#</div>#}
+
+
+
+
+
+
+
+
+                        <div id="applying-featured" style="margin-bottom: 10px; display: none">Applying<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></div>
+                        <button form="form1" class="btn btn-primary" style="font-weight: bold;margin-right: 10px;" id="changeFeatured" data-target="#modal" data-toggle="modal">Change</button>
+                        <button onclick="removeFeatured()" form="form1" class="btn btn-danger" style="font-weight: bold;margin-right: 10px;" id="removeFeatured" >Remove</button>
+                        {#<button form="form1" id="changeFeatured">Change</button>#}
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div id="cropped_result"></div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="row" style = "margin-left : 3px">
+                            <div class="form-group">
+                                <label>{{ text_post_title }}</label>
+                                <input placeholder="Enter A Title For The Post" class="formInput form-control" type="text" name="blogtitle" value="{{ post_details_title }}"  autocomplete="off" required>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>{{ text_key_words }}</label>
+                            <input placeholder="Enter Keywords Related To The Post" class="formInput form-control" type="text" name="blogkeywords" value="{{ post_details_keyword }}" autocomplete="off" required>
+                        </div>
+
+                        <label>{{ text_dropzone_instructions }}</label>
+                        <input type="hidden" id="post_images_id" name="post_images">
+                        <div id="dropzone" class="dropzone">
+                        </div>
+                        <div class="form-group">
+                            <input type="hidden" id="momday_blog_editor_innertext" name="momday_blog_editor_innertext">
+                            <label>{{ text_post_instructions }}</label>
+                            <textarea id="momday_blog_editor" name="blogcontent">
+                                {{ post_details_description }}
+                            </textarea>
+                        </div>
+
+
+
+
+                        <div class="form-group">
+                            <label style = "float:left">{{ text_post_status }}</label>
+                            <br>
+                            <br>
+                            <label class="container-radio">{{ text_post_status_on }}
+                                <input type="radio" {% if post_content_status == 1 or post_content_status == 2 or not post_content_status %} checked="checked" {% endif %} name="blogstatus" value = "1">
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="container-radio">{{ text_post_status_off }}
+                                <input type="radio" {% if post_content_status == 0 %} checked="checked" {% endif %} name="blogstatus" value = "0">
+                                <span class="checkmark"></span>
+                            </label>
+                            <br>
+                        </div>
+
+                        <div class="form-group">
+                            <label style = "float:left">{{ text_post_comments_status }}</label>
+                            <br>
+                            <br>
+                            <label class="container-radio">{{ text_post_status_on }}
+                                <input type="radio" {% if post_content_comments == 1 or post_content_comments == 2 or not post_content_comments %} checked="checked" {% endif %} name="blogcommentsstatus" value = "1">
+                                <span class="checkmark"></span>
+                            </label>
+                            <label class="container-radio">{{ text_post_status_off }}
+                                <input type="radio" {% if post_content_comments == 0 %} checked="checked" {% endif %} name="blogcommentsstatus" value = "0">
+                                <span class="checkmark"></span>
+                            </label>
+                            {#<label class="container-radio">{{ text_comments_status_same_as_global }}#}
+                                {#<input type="radio" {% if post_content_comments == 2 or not post_content_comments %} checked="checked" {% endif %} name="blogcommentsstatus" value = "2">#}
+                                {#<span class="checkmark"></span>#}
+                            {#</label>#}
+                            <br>
+                        </div>
+
+
+
+                        <div class="form-group">
+                            <div id="validating-data" style="margin-bottom: 10px; display: none">Validating data<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></div>
+                            <button form="form1" type = "submit" onclick="savePost()" data-toggle="tooltip" title="{{ text_button_save_message }}" class="btn btn-primary" style="font-weight: bold;margin-right: 20px;"><i class="fa fa-save"></i> {{ text_button_save }}</button>
+                            <a href="{{ cancel_post_url }}" onclick="return confirm('Are you sure?')" data-toggle="tooltip" title="{{ text_button_cancel_message }}" class="btn btn-danger" style="font-weight: bold;"><i class="fa fa-times"></i> {{ text_button_cancel }}</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function getSelectedBlogStatus(){
+                var radios = document.getElementsByName('blogstatus');
+                for (var i = 0, length = radios.length; i < length; i++)
+                {
+                    if (radios[i].checked)
+                    {
+                        return(radios[i].value);
+                    }
+                }
+            }
+            function checkAuthor(){
+                var selected_author = document.getElementById('author_select').value;
+                $.ajax({
+                    url: "{{ validate_author_url }}",
+                    type: "POST",
+                    async: "false",
+                    data: {
+                        author_id: selected_author
+                    },
+                    beforeSend:function(err){
+                        // show validating 3 dots
+                        document.getElementById("validating-data").style.display = '';
+                    },
+                    error:function(err){
+                        alert("Failed to verify author exists. Could not connect to server");
+                    },
+                    success:function(data){
+                        var json_result = JSON.parse(data);
+                        console.log(json_result.result);
+                        if(json_result.result == 1){
+                            document.getElementById("validating-data").style.display = 'none';
+                            submitBlogDetailsForm();
+                        }else{
+                            alert("Failed to validate author exists. Please refresh and try again (some progress will be lost) or switch post status off.")
+                            document.getElementById("validating-data").style.display = 'none';
+                        }
+                    }
+                });
+            }
+            // check author exists before submitting form
+            // $('#blogDetailsForm').submit(function(){
+            //     checkAuthor();
+            //     return false;
+            // });
+        </script>
+
+        {#<script src="view/javascript/jquery/jquery-2.1.1.min.js"></script>#}
+
+        <script src="view/journal2/lib/ckeditor/ckeditor.js"></script>
+
+        <link rel="stylesheet" href="view/css/momday/dropzone.css">
+        <script src="view/javascript/momday/dropzone.js" ></script>
+
+        <style>
+            #cropper{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+            #cropped_result{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+            #cropped_featured{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+            .img-container{
+                max-width: 100%; /* This rule is very important, please do not ignore this! */
+            }
+        </style>
+
+        <script>
+
+//            // Get the modal
+//            var modal = document.getElementById('featuredImageModal');
+//
+//            // Get the button that opens the modal
+//            var changeFeaturedBtn = document.getElementById("changeFeatured");
+//
+//            // // Get the <span> element that closes the modal
+//            // var span = document.getElementsByClassName("close")[0];
+//
+//            // When the user clicks on the button, open the modal
+//            changeFeaturedBtn.onclick = function() {
+//                modal.style.display = "block";
+//            };
+//
+//            // When the user clicks on <span> (x), close the modal
+//            $(".close-momday-modal").on('click', function(){
+//                modal.style.display = "none";
+//            }
+//            );
+//
+//            // When the user clicks anywhere outside of the modal, close it
+//            window.onclick = function(event) {
+//                if (event.target === modal) {
+//                    modal.style.display = "none";
+//                }
+//            }
+
+
+
+
+// window.addEventListener('DOMContentLoaded', function () {
+//     var image = document.getElementById('image');
+//     var cropBoxData;
+//     var canvasData;
+//     var cropper;
+//     $('#modal').on('shown.bs.modal', function () {
+//         cropper = new Cropper(image, {
+//             autoCropArea: 0.5,
+//             ready: function () {
+//                 //Should set crop box data first here
+//                 cropper.setCropBoxData(cropBoxData).setCanvasData(canvasData);
+//             }
+//         });
+//     }).on('hidden.bs.modal', function () {
+//         cropBoxData = cropper.getCropBoxData();
+//         canvasData = cropper.getCanvasData();
+//         cropper.destroy();
+//     });
+// });
+
+
+
+
+    function clearFeaturedPreviewsConatainer(){
+
+        document.getElementById('dz-previews-container').innerHTML="";
+    }
+
+    function onModalOpen(){
+        initializeCropper();
+    }
+
+    function applyCrop(){
+        // https://ourcodeworld.com/articles/read/322/how-to-convert-a-base64-image-into-a-image-file-and-upload-it-with-an-asynchronous-form-using-jquery
+        // https://stackoverflow.com/questions/446594/abort-ajax-requests-using-jquery
+        var cropperimage = $('#modal-featured-image');
+            var imgurl = cropperimage.cropper('getCroppedCanvas').toDataURL();
+        //     console.log(imgurl);
+        //
+        //     var img = document.createElement("img");
+        //     img.src = imgurl;
+            document.getElementById("cropped_featured").src = imgurl;
+    }
+
+
+    function b64toBlob(b64Data, contentType, sliceSize) {
+        contentType = contentType || '';
+        sliceSize = sliceSize || 512;
+
+        var byteCharacters = atob(b64Data);
+        var byteArrays = [];
+
+        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            var byteNumbers = new Array(slice.length);
+            for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            var byteArray = new Uint8Array(byteNumbers);
+
+            byteArrays.push(byteArray);
+        }
+
+        var blob = new Blob(byteArrays, {type: contentType});
+        return blob;
+    }
+
+    var xhr;
+
+    function saveCroppedImage(xhr){
+
+        var cropperimage = $('#modal-featured-image');
+        var ImageURL = cropperimage.cropper('getCroppedCanvas').toDataURL('image/jpeg',0.9);
+        // Split the base64 string in data and contentType
+        var block = ImageURL.split(";");
+        // Get the content type
+        var contentType = block[0].split(":")[1];// In this case "image/gif"
+        // get the real base64 content of the file
+        var realData = block[1].split(",")[1];// In this case "iVBORw0KGg...."
+
+        // Convert to blob
+        var blob = b64toBlob(realData, contentType);
+
+        // Create a FormData and append the file
+        var fd = new FormData();
+        console.log(blob);
+        fd.append("file", blob,"blob.jpeg");
+        // fd.append("featured_image", 1);
+        fd.append("post_id", {{ post_id }});
+        fd.append("post_type", 'featured');
+
+
+        //abort previous uploads if any
+        if(xhr && xhr.readyState != 4){
+            xhr.abort();
+        }
+
+        // Submit Form and upload file
+        xhr = $.ajax({
+            url:"{{ upload_file_url }}",
+            data: fd,// the formData function is available in almost all new browsers.
+            type:"POST",
+            contentType:false,
+            processData:false,
+            cache:false,
+            dataType:"json", // Change this according to your response from the server.
+            beforeSend: function() {
+                document.getElementById("applying-featured").style.display = '';
+            },
+            error:function(err){
+                // console.error(err);
+            },
+            success:function(data){
+                console.log("ok");
+                console.log(data);
+                document.getElementById("cropped_featured").src = data.image_directory + data.filepath + data.post_id + '/' + data.filename;
+            },
+            complete:function(){
+                console.log("Request finished.");
+                document.getElementById("applying-featured").style.display = 'none';
+            }
+        });
+
+    }
+
+
+
+    function removeFeatured(){
+
+        //abort previous uploads if any
+        if(xhr && xhr.readyState != 4){
+            xhr.abort();
+        }
+        var featured_image_source = document.getElementById("cropped_featured").src;
+        var filenameToRemove = featured_image_source.substring(featured_image_source.lastIndexOf('/')+1);
+
+        // Create a FormData and append the file details
+        var fd = new FormData();
+        fd.append("post_id", {{ post_id }});
+        fd.append("filenameToRemove", filenameToRemove);
+
+        $.ajax({
+            url:"{{ remove_featured_image_url }}",
+            data: fd,
+            type:"POST",
+            contentType:false,
+            processData:false,
+            cache:false,
+            dataType:"json", // Change this according to your response from the server.
+            error:function(err){
+                console.error(err);
+            },
+            success:function(data){
+                console.log(data);
+                document.getElementById("cropped_featured").src = "{{ blank_image }}";
+            },
+            complete:function(){
+                console.log("Request finished.");
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </script>
+
+        <script>
+            function initializeCropper() {
+                // var cropperimage = document.getElementById(cropper);
+                // var cropperimage = $('#cropper');
+                var cropperimage = $('#modal-featured-image');
+
+                var cropper = cropperimage.cropper('destroy').cropper({
+                    // var cropper = new Cropper(cropperimage, {
+
+                    // options here
+
+
+                    // Define the view mode of the cropper
+                    viewMode: 2, // 0, 1, 2, 3
+
+                    // Define the dragging mode of the cropper
+//                 dragMode: DRAG_MODE_CROP, // 'crop', 'move' or 'none'
+
+                    // Define the aspect ratio of the crop box
+                    aspectRatio: 1,
+
+                    // An object with the previous cropping result data
+                    data: null,
+
+                    // A selector for adding extra containers to preview
+                    preview: '',
+
+                    // Re-render the cropper when resize the window
+                    responsive: true,
+
+                    // Restore the cropped area after resize the window
+                    restore: true,
+
+                    // Check if the current image is a cross-origin image
+                    checkCrossOrigin: true,
+
+                    // Check the current image's Exif Orientation information
+                    checkOrientation: true,
+
+                    // Show the black modal
+                    modal: true,
+
+                    // Show the dashed lines for guiding
+                    guides: true,
+
+                    // Show the center indicator for guiding
+                    center: true,
+
+                    // Show the white modal to highlight the crop box
+                    highlight: true,
+
+                    // Show the grid background
+                    background: true,
+
+                    // Enable to crop the image automatically when initialize
+                    autoCrop: true,
+
+                    // Define the percentage of automatic cropping area when initializes
+                    autoCropArea: 0.8,
+
+                    // Enable to move the image
+                    movable: true,
+
+                    // Enable to rotate the image
+                    rotatable: true,
+
+                    // Enable to scale the image
+                    scalable: true,
+
+                    // Enable to zoom the image
+                    zoomable: true,
+
+                    // Enable to zoom the image by dragging touch
+                    zoomOnTouch: true,
+
+                    // Enable to zoom the image by wheeling mouse
+                    zoomOnWheel: true,
+
+                    // Define zoom ratio when zoom the image by wheeling mouse
+//                 wheel<a href="https://www.jqueryscript.net/zoom/">Zoom</a>Ratio: 0.1,
+
+                    // Enable to move the crop box
+                    cropBoxMovable: true,
+
+                    // Enable to resize the crop box
+                    cropBoxResizable: true,
+
+                    // Toggle drag mode between "crop" and "move" when click twice on the cropper
+                    toggleDragModeOnDblclick: true,
+
+                    // Size limitation
+                    minCanvasWidth: 0,
+                    minCanvasHeight: 0,
+                    minCropBoxWidth: 0,
+                    minCropBoxHeight: 0,
+                    minContainerWidth: 200,
+                    minContainerHeight: 100,
+
+                    // Shortcuts of events
+                    ready: null,
+                    cropstart: null,
+                    cropmove: null,
+                    cropend: null,
+                    crop: null,
+                    zoom: null
+
+
+                });
+                //
+                // document.getElementById('crop_button').addEventListener('click', function(){
+                //     // var imgurl =  cropper.getCroppedCanvas().toDataURL();
+                //     var canvas = cropper.cropper('getCroppedCanvas');
+                //     var imgurl = cropper.cropper('getCroppedCanvas').toDataURL();
+                //     console.log(imgurl);
+                //
+                //     var img = document.createElement("img");
+                //     img.src = imgurl;
+                //     document.getElementById("cropped_featured").src = imgurl;
+                //     // document.getElementById("cropped_featured").innerHTML = '';
+                //     // var cropped_image_element = document.getElementById("cropped_featured").appendChild(img);
+                //     // cropped_image_element.setAttribute("id","cropped_result");
+                //
+                //
+                //
+                //
+                //
+                //
+                //     // var c = document.getElementById("myCanvas");
+                //     // var ctx = c.getContext("2d");
+                //     // ctx.drawImage(canvas, 10, 10);
+                //
+                //
+                //
+                //
+                //
+                // })
+
+            }
+
+        </script>
+
+
+
+
+
+        <style>
+            .dropzone .dz-preview .dz-details .dz-filename, .dropzone-previews .dz-preview .dz-details .dz-filename {
+                overflow: hidden;
+                height: 100%;
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .dropzone .dz-preview .dz-details img, .dropzone-previews .dz-preview .dz-details img {
+                cursor: pointer;
+            }
+
+            /*.dropzone .dz-default.dz-message {*/
+            /*background-image: url('../image/dropzone/spritemap.png');*/
+            /*}*/
+        </style>
+
+        <script>
+            let post_images_array = [];
+
+            function removeFromArray(array_name, item_to_remove){
+                if (array_name.length >= 1){
+                    let index = array_name.indexOf(item_to_remove);
+                    if (index > -1) {
+                        array_name.splice(index, 1);
+                    }
+                }
+                return array_name;
+            }
+
+            Dropzone.autoDiscover = false;
+
+            $("#dropzone").dropzone({
+                addRemoveLinks: true,
+                maxFiles: 30, //change limit as per your requirements
+                acceptedFiles: '.jpeg,.jpg,.png,.gif',
+                dictMaxFilesExceeded: "Maximum upload limit reached",
+                url: "{{ upload_file_url }}",
+                params: {
+                    post_id: "{{ post_id }}",
+                },
+                dictInvalidFileType: "upload only JPG/PNG/GIF",
+
+                init: function() {
+                    {% for post_image in post_images_data %}
+                    var fileInfo = { name: "{{ post_image['image_name'] }}", size: "{{ post_image['image_size'] }}" };
+                    this.options.addedfile.call(this, fileInfo);
+                    this.options.thumbnail.call(this, fileInfo, "{{ images_directory }}" + "{{ post_image['image_name']}}");
+                    this.options.maxFiles = this.options.maxFiles - 1;
+                    fileInfo.previewElement.classList.add('dz-success');
+                    fileInfo.previewElement.classList.add('dz-complete');
+                    fileInfo.customFileNameAfterUpload = "{{ post_image['image_name'] }}";
+                    fileInfo.previewElement.addEventListener("click", function () {
+                        insert_image_into_editor('momday_blog_editor', "{{ images_directory }}" + "{{ post_image['image_name'] }}");
+                    });
+                    post_images_array.push("{{ post_image['image_name'] }}");
+                    {% endfor %}
+                    // document.getElementById('post_images_id').value=previous_images;
+                    console.log(this);
+                    $(".dz-filename").children("span").text("Click here to insert in blog");
+
+                    this.on("thumbnail", function (file) {
+                        console.log(file); // will send to console all available props
+                        file.previewElement.addEventListener("click", function () {
+                            insert_image_into_editor('momday_blog_editor', "{{ images_directory }}" + file.customFileNameAfterUpload);
+                        });
+                    });
+                    this.on("success", function (file,serverFileName) {
+                        $(".dz-filename").children("span").text("Click here to insert in blog");
+                        // console.log(file);
+                        // console.log(serverFileName);
+                        file.customFileNameAfterUpload =  serverFileName.filepath + serverFileName.post_id + '/' + serverFileName.filename;
+                        post_images_array.push(file.customFileNameAfterUpload);
+                        // console.log(this);
+                    });
+                    this.on("error", function(file, message) {
+                        this.removeFile(file);
+                        alert(message);
+                    });
+                    this.on("removedfile", function (file) {
+                        var filenameToRemove = file.customFileNameAfterUpload;
+                        console.log(filenameToRemove);
+                        // removeFromArray(post_images_array,filenameToRemove);
+                        $.ajax({
+                            url: "{{ delete_image_url }}", //your php file path to remove specified image
+                            type: "POST",
+                            data: {
+                                filenameToRemove: filenameToRemove,
+                                post_id: {{ post_id }},
+                                type: 'delete'
+                            },
+                        });
+                    });
+                }
+            });
+
+            $("#dropzone-featured-image").dropzone({
+                addRemoveLinks: false,
+                uploadMultiple: false,
+                createImageThumbnails: false,
+                previewsContainer : '#dz-previews-container',
+                previewTemplate: '<div class="uploaded-image"><span data-dz-name></span> <strong class="dz-size" data-dz-size></strong><div class="dz-error-message" data-dz-errormessage></div><div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div></div>',
+                acceptedFiles: '.jpeg,.jpg,.png,.gif',
+                dictMaxFilesExceeded: "Maximum upload limit reached",
+                url: "{{ upload_file_url }}",
+                params: {
+                    post_id: "{{ post_id }}"
+                },
+                dictInvalidFileType: "upload only JPG/PNG/GIF",
+
+                init: function() {
+
+                    this.on("success", function (file,serverFileName) {
+                    //     $(".dz-filename").children("span").text("Click here to insert in blog");
+                    //     document.getElementById('featured_image_id').value=serverFileName.filename;
+
+                        document.getElementById('modal-featured-image').src="{{ images_directory }}" + serverFileName.filepath + serverFileName.post_id + '/' + serverFileName.filename;
+                        initializeCropper();
+                        // var imageWidth = document.getElementById('modal-featured-image').style.width.valueOf();
+                        // var imageWidth = $('modal-featured-image').width();
+                        // console.log(imageWidth);
+                        // alert(document.getElementById("modal-featured-image").style.width);
+                        // document.getElementById('modal-content').css( "maxWidth", );
+                        // console.log(serverFileName.filename);
+                        // console.log(serverFileName);
+                    //     file.customFileNameAfterUpload = serverFileName.filename;
+                    });
+                    this.on("error", function(file, message) {
+                        this.removeFile(file);
+                        alert(message);
+                    });
+                    this.on("removedfile", function (file) {
+                        var filenameToRemove = file.customFileNameAfterUpload;
+                        if (document.getElementById('featured_image_id').value == file.customFileNameAfterUpload){
+                            document.getElementById('featured_image_id').value = '';
+                        }
+                        $.ajax({
+                            url: "{{ delete_image_url }}", //your php file path to remove specified image
+                            type: "POST",
+                            data: {
+                                filenameToRemove: filenameToRemove,
+                                post_id: {{ post_id }},
+                                type: 'delete'
+                            },
+                        });
+                    });
+                }
+            });
+
+            function submitBlogDetailsForm(){
+                document.getElementById('post_images_id').value = post_images_array;
+                document.getElementById('momday_blog_editor_innertext').value =CKEDITOR.instances.momday_blog_editor.getData();
+                document.getElementById("blogDetailsForm").submit();
+            }
+            function validateBlogDetailsForm()
+            {
+                var blogtitle=document.forms["blogDetailsForm"]["blogtitle"].value;
+                var blogkeywords=document.forms["blogDetailsForm"]["blogkeywords"].value;
+                if (blogtitle==null || blogtitle=="",blogkeywords==null ||blogkeywords=="")
+                {
+                    alert("Please Fill Post Title and Keywords");
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+            function savePost(){
+                if(getSelectedBlogStatus()==1){
+                    if(validateBlogDetailsForm()) {
+                        checkAuthor();
+                    }
+                }else{
+                    submitBlogDetailsForm();
+                }
+            }
+
+        </script>
+
+        <br>
+
+        {#<textarea id="momday_blog_editor">#}
+        {#</textarea>#}
+
+        <script>
+            var dict = {};
+            // dict["1"]="<img alt=\"\" src=\"http://localhost/Momday/image/momday/8.jpeg\" width=\"200\" />&nbsp;";
+            // dict["1"]="<img src=\"http://localhost/Momday/image/momday/8.jpeg>\"";
+            dict["1"] = '<img src="http://momday.net/image/momday/1.jpeg"/>';
+            dict["2"] = '<img src="http://momday.net/image/momday/2.jpeg"/>';
+            CKEDITOR.config.dict=dict;
+            CKEDITOR.config.height=500;
+            CKEDITOR.replace( 'momday_blog_editor', {
+                // Load the momday_insert_image  plugin.
+                // extraPlugins: 'momday_insert_image',
+                sampleConfig: 'test_sample',
+
+                // Disable Advanced Content Filter as the plugin does not implement it (yet).
+                allowedContent: true,
+
+                // The following options are set to make the sample more clear for demonstration purposes.
+
+                // Rearrange toolbar groups and remove unnecessary plugins.
+                toolbarGroups: [
+                    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ] },
+                    { name: 'links' },
+                    { name: 'insert' },
+                    { name: 'document',	   groups: [ 'mode' ] },
+                    '/',
+                    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+                    { name: 'paragraph',   groups: [ 'list', 'indent' ] },
+                    { name: 'styles' },
+                    { name: 'about' }
+                ],
+                removePlugins: 'font,iframe,pagebreak,flash,stylescombo,print,preview,save,smiley,pastetext,pastefromword',
+                removeButtons: 'Anchor,Font,Strike,Subscript,Superscript'
+            } );
+            // CKEDITOR.timestamp='ABCD';
+            dict["3"] = '<img src="http://momday.net/image/momday/3.jpeg"/>';
+            // var element = CKEDITOR.instances['momday_blog_editor'].dom.element.createFromHtml('<img src="' + $SCRIPT_ROOT + '/api/files/' + file.id + '?filter=image"/>');
+            // var element = new CKEDITOR.dom.element.createFromHtml('<img src="http://localhost/Momday/image/momday/8.jpeg"/>');
+            // var imgHtml = CKEDITOR.dom.element.createFromHtml('<img src="' + imageSrcUrl + '?width=' + width + '&height=' + height + '" alt="" style="width:' + width + 'px;height:' + height + 'px;" />');
+
+            CKEDITOR.instances['momday_blog_editor'].insertText('hello');
+            // CKEDITOR.instances['momday_blog_editor'].insertElement(element);
+            // CKEDITOR.instances['momday_blog_editor'].insertElement(element);
+            // CKEDITOR.instances['momday_blog_editor'].insertHtml('<img src="http://localhost/Momday/image/momday/8.jpeg"/>');
+            // CKEDITOR.setData(element);
+
+            // CKEDITOR.config.test="test234";
+            // CKEDITOR.replace('momday_blog_editor', CKEDITOR.config);
+
+            // for(var instanceName in CKEDITOR.instances) {
+            //     console.log( CKEDITOR.instances[instanceName] );
+            // }
+
+
+        </script>
+
+        <script>
+            function insert_image_into_editor(editor_name, image_name){
+                // dict["4"] = 'fourth';
+                CKEDITOR.instances[editor_name].insertHtml('<img src="' + image_name + '"/>');
+            }
+        </script>
+
+        </body>
+        {#</html>#}
+
+
+    </div>
+
+</div>
+{{ footer }}

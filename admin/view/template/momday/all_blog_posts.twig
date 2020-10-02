@@ -1,0 +1,217 @@
+{{ header }}
+
+<link rel="stylesheet" href="view/javascript/DataTables/datatables.css">
+<script src="view/javascript/DataTables/datatables.js" ></script>
+<link href="view/javascript/font-awesome/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
+<style>
+    .add-text{
+        font-weight: bold;
+    }
+</style>
+
+
+{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <a href="{{ href['href_add'] }}" data-toggle="tooltip" title="{{ text_button_add }}" class="btn btn-primary add-text"><i class="fa fa-plus"></i> {{ button_add }}</a>
+                <a href="{{ href['href_comments'] }}" data-toggle="tooltip" title="{{ text_view_all_comments }}" class="btn btn-primary add-text"><i class="fa fa-comment"></i> {{ button_comments }}</a>
+                <a href="{{ href['href_author'] }}" data-toggle="tooltip" title="{{ text_view_blog_authors }}" class="btn btn-primary add-text"><i class="fa fa-user"></i> {{ button_authors }}</a>
+                {#<a href="{{ href['href_add'] }}" data-toggle="tooltip" title="{{ text_blog_settings }}" class="btn btn-primary add-text"><i class="fa fa-cog"></i> {{ button_blog_settings }}</a>#}
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+
+        <table id="example" class="display" style="width:100%">
+            <thead>
+            <tr>
+                <th>Post Title</th>
+                <th>Views</th>
+                <th>Comments</th>
+                <th>Date Created</th>
+                <th>Date Updated</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+        </table>
+
+    </div>
+</div>
+{{ footer }}
+
+
+
+<script>
+
+    {#function delete_post(post_id) {#}
+        {#$.ajax({#}
+            {#url: "{{ href['href_edit']}}",#}
+            {#type: "POST",#}
+            {#data: {#}
+                {#post_id: post_id#}
+            {#},#}
+            {#complete: function() {#}
+                {#window.location.href = {{ href['href_delete']}};#}
+            {#}#}
+
+        {#});#}
+
+    {#}#}
+
+    function activate_deactivate_post(post_id){
+        $.ajax({
+            url: "{{ activate_deactivate_post }}",
+            type: "POST",
+            data: {
+                post_id: post_id,
+                post_status: document.getElementById("activate_deactivate_post_" + post_id).value
+                // type: 'delete'
+            },
+            beforeSend: function() {
+                $("#activate_deactivate_post_" + post_id).tooltip('hide');
+                document.getElementById("activate_deactivate_icon_" + post_id).className = "fa fa-circle-o-notch fa-spin";
+                document.getElementById("activate_deactivate_post_" + post_id).disabled = true;
+            },
+            success: function(data) {
+                var result = JSON.parse(data);
+                if(result.author_exists ===0){
+                    alert("Could not activate post with invalid author. Please set author first.")
+                    document.getElementById("activate_deactivate_icon_"+result.post_id).className = "fa fa-power-off";
+                    document.getElementById("activate_deactivate_post_" + post_id).disabled = false;
+                }
+                else if(result.new_status === 1){
+                    document.getElementById("activate_deactivate_icon_"+result.post_id).className = "fa fa-ban";
+                    document.getElementById("activate_deactivate_post_"+result.post_id).value = result.new_status;
+                    $("#activate_deactivate_post_" + post_id).attr("data-original-title", 'Deactivate');//.tooltip('show');
+                    document.getElementById("activate_deactivate_post_" + post_id).disabled = false;
+                    document.getElementById("status_id_" + post_id).innerHTML = 'Active';
+                }else if(result.new_status === 0){
+                    document.getElementById("activate_deactivate_icon_"+result.post_id).className = "fa fa-power-off";
+                    document.getElementById("activate_deactivate_post_"+result.post_id).value = result.new_status;
+                    $("#activate_deactivate_post_" + post_id).attr("data-original-title", 'Activate');//.tooltip('show');
+                    document.getElementById("activate_deactivate_post_" + post_id).disabled = false;
+                    document.getElementById("status_id_" + post_id).innerHTML = 'Inactive';
+                }
+            },
+            error: function(xhr, status, error){
+                if(document.getElementById("activate_deactivate_post_"+result.post_id).value === 1){
+                    document.getElementById("activate_deactivate_icon_"+result.post_id).className = "fa fa-ban";
+                    $("#activate_deactivate_post_" + post_id).attr("data-original-title", 'Deactivate');//.tooltip('show');
+                    document.getElementById("activate_deactivate_post_" + post_id).disabled = false;
+                }else if(document.getElementById("activate_deactivate_post_"+result.post_id).value === 0){
+                    document.getElementById("activate_deactivate_icon_"+result.post_id).className = "fa fa-power-off";
+                    $("#activate_deactivate_post_" + post_id).attr("data-original-title", 'Activate');//.tooltip('show');
+                    document.getElementById("activate_deactivate_post_" + post_id).disabled = false;
+                }
+            }
+        });
+    }
+
+    var post_id_to_status = {{ post_id_to_status }}
+    $(document).ready(function() {
+        var id_col_index = 6;
+        var status_col_index = 5;
+        var table = $('#example').DataTable( {
+            "ajax": "{{ return_all_url }}",
+            "columns": [
+                { "data": "name" },
+                { "data": "views" },
+                { "data": "comments" },
+                { "data": "date_created" },
+                { "data": "date_updated" },
+                { "data": "status" },
+                { "data": "post_id" }
+            ],
+            "order": [[ 4, "desc" ]],
+
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+
+            // select: 'multi',
+
+            columnDefs: [
+                // { visible: false, targets: [   10, 11, 12, 13, 14, 15, 16] },
+                {
+                    targets: status_col_index,
+                    createdCell:  function (td, cellData, rowData, row, col) {
+                        $(td).attr('id', 'status_id_'+rowData.post_id);
+                    },
+                    render: function (data, type, row) {
+                        if(data === '1'){
+                            return "Active";
+                        }else{
+                            return "Inactive"
+                        }
+
+                    }
+                },
+                {
+                    targets: id_col_index,
+                    render: function (data) {
+                        // var response1 = JSON.parse(data);
+                        // var post_id = response1.views;
+                        var status = post_id_to_status[data];
+                        var tooltip_title;
+                        var font_class;
+                        var post_status;
+                        if (post_id_to_status[data] === "1"){
+                            tooltip_title = "{{ text_deactivate}}";
+                            font_class = "fa fa-ban";
+                            post_status = 1;
+                        }else{
+                            tooltip_title = "{{ text_activate}}";
+                            font_class = "fa fa-power-off";
+                            post_status = 0;
+                        }
+
+                        var buttons =' <form action="{{ href['href_delete'] }}" method="post" id="form_delete_' + data + '"><input type="hidden" name="post_id" value="' + data + '"></form>' +
+                            ' <a href="{{ href['href_edit']}}' + '&post_id=' + data +  '" class="btn btn-info button" data-toggle="tooltip"  title="{{ text_edit }}"><i class="fa fa-pencil"></i></a>' +
+                            ' <button onclick="activate_deactivate_post(' + data + ')" id= activate_deactivate_post_' + data + ' value="' + post_status + '" class="btn btn-info button" data-toggle="tooltip"  title="' + tooltip_title + '"><i id= activate_deactivate_icon_' + data + ' class="' + font_class + '"></i></button>'+
+                                {#' <a href="{{ href['href_delete']}}' + '&post_id=' + data +  '" class="btn btn-info button" data-toggle="tooltip"  title="{{ text_delete}}"><i class="fa fa-trash-o"></i></a>' +#}
+                            ' <button onclick="return confirm(\'Are you sure you want to permanently delete post?\');" form="form_delete_' + data + '" value="Submit" class="btn btn-info button" data-toggle="tooltip"  title="{{ text_delete}}"><i class="fa fa-trash-o"></i></button>' +
+                            ' <a href="{{ href['href_comments']}}' + '&post_id=' + data +  '" class="btn btn-info button" data-toggle="tooltip"  title="{{ text_comments}}"><i class="fa fa-comment"></i></a>';
+
+                        return buttons;
+
+                    }
+                }
+            ]
+        } );
+
+
+        $( table.cells().nodes() ).removeClass( 'highlight' );
+        $('.header-select').remove();
+
+
+        // $('#example tbody').on( 'click', 'tr', function () {
+        //     $(this).toggleClass('selected');
+        // } );
+        //
+        // $('button').on('click', function() {
+        //     let rows = table.rows( { selected: true } );
+        //     var result =  table.cells( rows.nodes(), id_col_index ).data();
+        //     console.log(result);
+        // })
+
+    } );
+
+
+</script>
